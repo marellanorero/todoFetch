@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 
 function Todo({ todo, index, removeTodo }) {
   return (
     <div className="todo">
-      {todo.text}
-      <div>
+      {todo.label}
+    <div>
         
         <button onClick={() => removeTodo(index)}><span>x</span></button>
       </div>
     </div>
   );
 }
+
 
 function TodoForm({ addTodo }) {
   const [value, setValue] = useState("");
@@ -21,8 +22,9 @@ function TodoForm({ addTodo }) {
     if (!value) return;
     addTodo(value);
     setValue("");
-    
   };
+
+  
 
   return (
     
@@ -40,23 +42,48 @@ function TodoForm({ addTodo }) {
 }
 
 function App() {
-  const [todos, setTodos] = useState([
-    {
-      text: "Learn about React",
-      isCompleted: false
-    },
-    {
-      text: "Meet friend for lunch",
-      isCompleted: false
-    },
-    {
-      text: "Build really cool todo app",
-      isCompleted: false
-    }
-  ]);
+  const url = "http://assets.breatheco.de/apis/fake/todos/user/laura";
+  const [todos, setTodos] = useState([]);
 
+  useEffect(() => {
+    getTodo(url);
+  }, [])
+  
+  
+const getTodo = url => {
+    fetch(url, {
+      method: 'GET', //Get, put, post, delete
+      //body: data //post, put
+      headers: {
+          'Content-Type': 'application/json'
+      }
+   })
+   .then(response => response.json())
+   .then(data => setTodos(data))
+  }
+  const getUpdate = url =>{
+    fetch( url, {
+      method: 'PUT',
+      body: JSON.stringify(todos),
+      headers: {
+        'Content-Type' : 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => setTodos(data))
+}
+  const deleteTodo = url =>{
+    fetch( url, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type' : 'application/json'
+      }
+    })
+    .then(response => response.json())
+    .then(data => setTodos(data))
+  }
   const addTodo = text => {
-    const newTodos = [...todos, { text }];
+    const newTodos = [...todos, { label: text, done: false }];
     setTodos(newTodos);
   };
 
@@ -84,10 +111,17 @@ function App() {
             todo={todo}
             completeTodo={completeTodo}
             removeTodo={removeTodo}
+            onClick={() => getUpdate(todo)}
           />
         ))}
-       
+       <button
+					type="button"
+					className="btn btn-danger"
+					onClick={() => deleteTodo()}>
+					Delete All
+				</button>
       </div>
+      
     </div>
   );
 }
